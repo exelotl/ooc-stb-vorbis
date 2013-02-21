@@ -1,0 +1,4 @@
+.libs/*
+rock_tmp/*
+*.exe
+sdlstreaming

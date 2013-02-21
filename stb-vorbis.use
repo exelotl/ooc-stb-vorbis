@@ -1,0 +1,7 @@
+Name: stb-vorbis
+Version: 0.99996
+Description: stb_vorbis - Public domain Ogg Vorbis decoder
+SourcePath: source
+Imports: stb/vorbis
+Additionals: ./source/stb/stb_vorbis.c
+
