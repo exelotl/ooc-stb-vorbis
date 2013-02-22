@@ -15,10 +15,10 @@ StbVorbisInfo: cover from stb_vorbis_info {
    max_frame_size: extern Int
 }
 
-StbVorbis: cover from sdb_vorbis* {
+StbVorbis: cover from stb_vorbis* {
 
 	getInfo: extern(stb_vorbis_get_info) func -> StbVorbisInfo
-	getError: extern(stb_vorbis_get_error) func -> Int
+	getError: extern(stb_vorbis_get_error) func -> StbVorbisError
 	close: extern(stb_vorbis_close) func
 
 	getSampleOffset: extern(stb_vorbis_get_sample_offset) func -> Int
@@ -26,7 +26,7 @@ StbVorbis: cover from sdb_vorbis* {
 
 	openPushdata: extern(stb_vorbis_open_pushdata) static func(  \
 		datablock:UInt8*, len:Int, memoryConsumed:Int*,          \
-		error:Int*, allocBuffer:StbVorbisAlloc*) -> StbVorbis
+		error:StbVorbisError*, allocBuffer:StbVorbisAlloc*) -> StbVorbis
 
 	decodeFramePushdata: extern(stb_vorbis_decode_frame_pushdata) func( \
     	datablock:UInt8*, len:Int, channels:Int*, output:Float***, samples:Int*) -> Int
@@ -41,16 +41,16 @@ StbVorbis: cover from sdb_vorbis* {
 		mem:UInt8*, len:Int, channels:Int*, output:Short**) -> Int
 
 	openMemory: extern(stb_vorbis_open_memory) static func( \
-		data:UInt8*, len:Int, error:Int*, buffer:StbVorbisAlloc*) -> StbVorbis
+		data:UInt8*, len:Int, error:StbVorbisError*, buffer:StbVorbisAlloc*) -> StbVorbis
 	
 	openFilename: extern(stb_vorbis_open_filename) static func(
-		filename:CString, error:Int*, buffer:StbVorbisAlloc*) -> StbVorbis
+		filename:CString, error:StbVorbisError*, buffer:StbVorbisAlloc*) -> StbVorbis
 	
 	openFile: extern(stb_vorbis_open_file) static func( \
-		f:FStream, closeHandle:Int, error:Int*, buffer:StbVorbisAlloc*) -> StbVorbis
+		f:FStream, closeHandle:Int, error:StbVorbisError*, buffer:StbVorbisAlloc*) -> StbVorbis
 	
 	openFileSection: extern(stb_vorbis_open_file_section) static func( \
-		f:FStream, closeHandle:Int, error:Int*, buffer:StbVorbisAlloc*, len:UInt) -> StbVorbis
+		f:FStream, closeHandle:Int, error:StbVorbisError*, buffer:StbVorbisAlloc*, len:UInt) -> StbVorbis
 	
 	
 	// NOTE: these two aren't implemented in stb_vorbis yet
@@ -62,29 +62,33 @@ StbVorbis: cover from sdb_vorbis* {
 	getLengthInSamples: extern(stb_vorbis_stream_length_in_samples) func -> UInt
 	getLengthInSeconds: extern(stb_vorbis_stream_length_in_seconds) func -> Float
 	
-	getFrameFloat: extern(stb_vorbis_get_frame_float) func(channels:Int*, output:Float***) -> Int
+	getFrame: extern(stb_vorbis_get_frame_float) func ~float (channels:Int*, output:Float***) -> Int
 	
-	getFrameShortInterleaved: extern(stb_vorbis_get_frame_short_interleaved) func( \
+	
+	getFrameInterleaved: extern(stb_vorbis_get_frame_short_interleaved) func ~short ( \
 		numC:Int, buffer:Short*, numShorts:Int) -> Int
 	
-	getFrameShort: extern(stb_vorbis_get_frame_short) func( \
+	getFrame: extern(stb_vorbis_get_frame_short) func ~short ( \
 		numC:Int, buffer:Short**, numSamples:Int) -> Int
 	
-	getSamplesFloatInterleaved: extern(stb_vorbis_get_samples_float_interleaved) func( \
+	
+	getSamplesInterleaved: extern(stb_vorbis_get_samples_float_interleaved) func ~float( \
 		numC:Int, buffer:Float*, numFloats:Int) -> Int
 	
-	getSamplesFloat: extern(stb_vorbis_get_samples_float) func( \
+	getSamples: extern(stb_vorbis_get_samples_float) func ~float( \
 		numC:Int, buffer:Float**, numSamples:Int) -> Int
 	
-	getSamplesShortInterleaved: extern(stb_vorbis_get_samples_short_interleaved) func( \
+	
+	getSamplesInterleaved: extern(stb_vorbis_get_samples_short_interleaved) func ~short( \
 		channels:Int, buffer:Short*, numShorts:Int) -> Int
 	
-	getSamplesShort: extern(stb_vorbis_get_samples_short) func( \
+	getSamples: extern(stb_vorbis_get_samples_short) func ~short( \
 		channels:Int, buffer:Short**, numSamples:Int) -> Int
-		
+	
 }
 	
 StbVorbisError: enum {
+	
 	NONE                             : extern (VORBIS__no_error)
 	NEED_MORE_DATA                   : extern (VORBIS_need_more_data)
 	INVALID_API_MIXING               : extern (VORBIS_invalid_api_mixing)
@@ -105,4 +109,30 @@ StbVorbisError: enum {
 	BAD_PACKET_TYPE                  : extern (VORBIS_bad_packet_type)
 	CANT_FIND_LAST_PAGE              : extern (VORBIS_cant_find_last_page)
 	SEEK_FAILED                      : extern (VORBIS_seek_failed)
+	
+	toString: func -> String {
+		match this {
+			case NONE => "none"
+			case NEED_MORE_DATA => "need more data"
+			case INVALID_API_MIXING => "invalid api mixing"
+			case OUT_OF_MEMORY => "out of memory"
+			case FEATURE_NOT_SUPPORTED => "feature not supported"
+			case TOO_MANY_CHANNELS => "too many channels"
+			case FILE_OPEN_FAILURE => "file open failure"
+			case SEEK_WITHOUT_LENGTH => "seek without length"
+			case UNEXPECTED_EOF => "unexpected eof"
+			case SEEK_INVALID => "seek invalid"
+			case INVALID_SETUP => "invalid setup"
+			case INVALID_STREAM => "invalid stream"
+			case MISSING_CAPTURE_PATTERN => "missing capture pattern"
+			case INVALID_STREAM_STRUCTURE_VERSION => "invalid stream structure_version"
+			case CONTINUED_PACKET_FLAG_INVALID => "continued packet flag invalid"
+			case INCORRECT_STREAM_SERIAL_NUMBER => "incorrect stream serial number"
+			case INVALID_FIRST_PAGE => "invalid first page"
+			case BAD_PACKET_TYPE => "bad packet type"
+			case CANT_FIND_LAST_PAGE => "can't find last page"
+			case SEEK_FAILED => "seek failed"
+			case => "unknown error code '%d'" format(this)
+		}
+	}
 }
