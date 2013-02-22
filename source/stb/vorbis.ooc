@@ -125,7 +125,7 @@ StbVorbisError: enum {
 			case INVALID_SETUP => "invalid setup"
 			case INVALID_STREAM => "invalid stream"
 			case MISSING_CAPTURE_PATTERN => "missing capture pattern"
-			case INVALID_STREAM_STRUCTURE_VERSION => "invalid stream structure_version"
+			case INVALID_STREAM_STRUCTURE_VERSION => "invalid stream structure version"
 			case CONTINUED_PACKET_FLAG_INVALID => "continued packet flag invalid"
 			case INCORRECT_STREAM_SERIAL_NUMBER => "incorrect stream serial number"
 			case INVALID_FIRST_PAGE => "invalid first page"

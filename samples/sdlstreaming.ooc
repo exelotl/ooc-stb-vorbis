@@ -5,15 +5,10 @@ import sdl2/[Core, Audio]
 error: StbVorbisError
 ogg: StbVorbis
 buffer: Short*
-playing := true
 
 mix: func (userdata:Pointer, stream:UInt8*, len:Int) {
 	memset(stream, 0, len)
-	
-	channelSize := ogg getSamplesInterleaved(2, buffer, len/2)
-	if (channelSize == 0)
-		playing = false
-		
+	ogg getSamplesInterleaved(2, buffer, len/2)	
 	SdlAudio mix(stream, buffer, len, SDL_MIX_MAXVOLUME)
 }
 
@@ -21,12 +16,10 @@ mix: func (userdata:Pointer, stream:UInt8*, len:Int) {
 main: func(argc:Int, argv:CString*) {
 	
 	ogg = StbVorbis openFilename("commensualism.ogg", error&, null)
-	
 	if (ogg == null)
 		Exception new("[Failed to load ogg file] %s" format(error toString())) throw()
 	
 	SDL init(SDL_INIT_AUDIO)
-	
 	spec: SdlAudioSpec
 	spec freq = 44100
 	spec format = AUDIO_S16
@@ -38,12 +31,12 @@ main: func(argc:Int, argv:CString*) {
 		Exception new("[Failed to open audio device!] %s" format(SDL getError())) throw()
 	
 	buffer = gc_malloc(spec size)
-	
 	SdlAudio setPaused(false)
 	
-	while (playing)
+	while (ogg getSampleOffset() < ogg getLengthInSamples())
 		SDL delay(50)
 	
 	SdlAudio close()
+	ogg close()
 	SDL quit()
 }
